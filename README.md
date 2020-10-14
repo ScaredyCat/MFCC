@@ -1,7 +1,7 @@
 # MFCC
 My first Clock Controller - My Corona Virus lockdown project (2020 - just in case there's another outbreak)
 
-I was furloughed during 2020 and legally wasn't allowed to work for my employer so I took the time to try and learn somthing new. That turned out to be this project, learning how to use Kicad and how to build a radio-time enabled clock. Most of the things I've built in the past don't survive for too long, the Arduino is invariably repurposed for the next project and so on. This time is was different.
+I was furloughed during 2020 and legally wasn't allowed to work for my employer so I took the time to try and learn somthing new. That turned out to be this project, learning how to use Kicad and how to build a radio-time enabled clock. Most of the things I've built in the past don't survive for too long, the Arduino is invariably repurposed for the next project and so on. This time it was different.
 
 # Before we start
 
@@ -12,9 +12,9 @@ I've made some modifications to both the MSFDecoder library and the JQ6500 libra
 
 # Board
 
-I used a DIYMORE Arduino Leonardo Clone for this project they are half the price of a Genuine Arduino Leonardo and have pints broken out to header pins in addition to the standard headers. The also have GND and 5v broken out for each pin and additional header pins for serial and i2c. This is really the sort of connectivity that I think should be on the genuine boards, but I guess they have reasons for not doing it.
+I used a DIYMORE Arduino Leonardo Clone for this project they are half the price of a Genuine Arduino Leonardo and have pins broken out to header pins in addition to the standard headers. The also have GND and 5v broken out for each pin and additional header pins for serial and i2c. This is really the sort of connectivity that I think should be on the genuine boards, but I guess they have reasons for not doing it.
 
-The "motherboard" is really a deliberately oversized Arduino shield but it removes a lot of the wires and provides a stable platform fo rall the components. I appreciate my soldering leaves a lot to be desired. I used pin headers quite a bit for my connections just for convenience - they turned out to be inconvenient when wires kept popping out of them. Many of the connections do not get populated as they are for other options.
+The "motherboard" is really a deliberately oversized Arduino shield but it removes a lot of the wires and provides a stable platform for all the components. I appreciate my soldering leaves a lot to be desired. I used pin headers quite a bit for my connections just for convenience - they turned out to be inconvenient when wires kept popping out of them. Many of the connections do not get populated as they are for other options.
 
 
 
