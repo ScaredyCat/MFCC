@@ -903,11 +903,6 @@ void tasksOnceAMinute() {
 
     if (soundChime && !goDark) {
 
-      
-      if (oldM == 10 && oldS == 0)  {
-        chime(CLOCK_15_MINUTE);
-      }
-
       if (oldM == 15 && oldS == 0)  {
         chime(CLOCK_15_MINUTE);
       }
