@@ -1,7 +1,7 @@
 # MFCC
 My first Clock Controller - My Corona Virus lockdown project (2020 - just in case there's another outbreak)
 
-I was furloughed during 2020 and legally wasn't allowed to work for my employer so I took the time to try and learn somthing new. That turned out to be this project, learning how to use Kicad and how to build a radio-time enabled clock. Most of the things I've built in the past don't survive for too long, the Arduino is invariably repurposed for the next project and so on. This time is was different.
+I was furloughed during 2020 and legally wasn't allowed to work for my employer so I took the time to try and learn somthing new. That turned out to be this project, learning how to use Kicad and how to build a radio-time enabled clock. Most of the things I've built in the past don't survive for too long, the Arduino is invariably repurposed for the next project and so on. This time it was different.
 
 # Before we start
 
