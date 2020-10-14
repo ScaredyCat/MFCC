@@ -12,6 +12,15 @@
 // The main decoder logic is fundamentally unchanged - all Kudos to Jarkman, please!
 
 // 9th March 2013
+//
+//
+// June 2020  - Added BST and BST Changing indicators and decoding.
+//            - Added Pim and interrupt id parameters. Should probably be
+//              a lookup table for each arduino model but I don't have the time
+//              or inclination to build it, just pass the right values.
+//            - Increased minmum pulse width length to prevent interrupt being
+//              called repeatedly in noisy environments.
+//            - Decreased PULSE_OFF_OFFSET
 
 #include "Arduino.h"
 #include <wiring_private.h>
@@ -19,10 +28,10 @@
 
 #define PULSE_MARGIN 30     // The leeway we allow our pulse lengths
 
-#define PULSE_OFF_OFFSET 20 // arbitrary offset to compensate for assymetric behaviour of my receiver,
+#define PULSE_OFF_OFFSET 10 // arbitrary offset to compensate for assymetric behaviour of my receiver,
                             // which tends to deliver an 'off' period that is too short
 
-#define PULSE_IGNORE_WIDTH 30 // just ignore very short pulses
+#define PULSE_IGNORE_WIDTH 80 // just ignore very short pulses
 
 MSFDecoder *sMSF = NULL; // pointer to singleton
 

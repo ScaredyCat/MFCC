@@ -344,6 +344,7 @@ bool writtenToday = false;
 bool writtenThisHour = false;
 
 byte iBitCount = 0;
+bool bCarrierState = false;
 
 Time tinfo;
 
@@ -404,7 +405,7 @@ void setup() {
   digitalWrite(CLOCKB, LOW);
 
   tinfo = Clock.getTime();
-  setTime(tinfo.hour,tinfo.min,tinfo.sec,tinfo.date,tinfo.mon,tinfo.year);
+  setTime(tinfo.hour, tinfo.min, tinfo.sec, tinfo.date, tinfo.mon, tinfo.year);
 
   mp3.begin(9600);
   mp3.reset();
@@ -484,14 +485,14 @@ void setup() {
   pinMode(BACKLIGHT_PIN, OUTPUT);
   analogWrite(BACKLIGHT_PIN, 0);
 
-  setSyncInterval(260);
-  setSyncProvider(refreshClockTime);
+ // setSyncInterval(260);
+ // setSyncProvider(refreshClockTime);
 
 }
 
 unsigned long refreshClockTime() {
 
-     return Clock.getUnixTime(Clock.getTime());
+  return Clock.getUnixTime(Clock.getTime());
 }
 
 
@@ -508,12 +509,10 @@ void loop() {
     firstRun = false;
   }
 
-  bool bCarrierState = MSF.getHasCarrier();
+  bCarrierState = MSF.getHasCarrier();
   iBitCount = MSF.getBitCount();
 
-  indicatorLED(LED_MSFCARRIER, GREEN, WHITE, bCarrierState);
-  indicatorLED(VALID_MSFTIME, GREEN, ORANGE, MSF.TimeAvailable);
-  indicatorLED(LED_MIRROR, MAGENTA, OFF, !MSF.LED);
+
 
   if (MSF.TimeAvailable) {
 
@@ -523,7 +522,7 @@ void loop() {
 
       // write it to DS3231
       if (MSF.m_iYear < 2000)
-        Clock.setDate(MSF.m_iDay, MSF.m_iMonth, 2000+MSF.m_iYear);
+        Clock.setDate(MSF.m_iDay, MSF.m_iMonth, 2000 + MSF.m_iYear);
       else
         Clock.setDate(MSF.m_iDay, MSF.m_iMonth, MSF.m_iYear);
 
@@ -531,9 +530,9 @@ void loop() {
       Clock.setDOW(MSF.m_iDOW);
 
       if (MSF.m_iYear < 2000)
-        setTime(MSF.m_iHour, MSF.m_iMinute,0,MSF.m_iDay, MSF.m_iMonth, MSF.m_iYear);
+        setTime(MSF.m_iHour, MSF.m_iMinute, 0, MSF.m_iDay, MSF.m_iMonth, MSF.m_iYear);
       else
-        setTime(MSF.m_iHour, MSF.m_iMinute,0,MSF.m_iDay, MSF.m_iMonth, 2000+MSF.m_iYear);
+        setTime(MSF.m_iHour, MSF.m_iMinute, 0, MSF.m_iDay, MSF.m_iMonth, 2000 + MSF.m_iYear);
 
       Clock.setDate(day(), month(), year());
 
@@ -604,60 +603,18 @@ void loop() {
     }
 
     MSF.TimeAvailable = 0;
+  } else {
+
+    // doing this makes me vomit a little each time I see it.
+    // but it does 'fix' the issue.
+    
+    tinfo = Clock.getTime();
+    setTime(tinfo.hour, tinfo.min, tinfo.sec, tinfo.date, tinfo.mon, tinfo.year);
   }
-
-  if (oldS != second() && (!retard && !advance)) {
-    oldS = second();
-    if (stopClock == false) {
-      motorPulse(clockwise);
-      pulses++;
-    }
-
-    tick = !tick;
-    indicatorLED(SECOND_TICK, GREEN, RED, tick);
-    lcdindicatorLED(SECOND_TICK, tick);
-
-    if (soundChime && !goDark) {
-
-      if (oldM == 15 && oldS == 0)  {
-        chime(CLOCK_15_MINUTE);
-      }
-      if (oldM == 30 && oldS == 0)  {
-        chime(CLOCK_30_MINUTE);
-      }
-      if (oldM == 45 && oldS == 0)  {
-        chime(CLOCK_45_MINUTE);
-      }
-      if (oldM == 59 && oldS == 55) {
-        chime(CLOCK_15_MINUTE);
-      }
-
-    }
-
-    tasksOnceAMinute();
-    tasksOnceAnHour();
-    tasksOnceADay();
-    tasksOnceAYear();
-
-    if (oldH >= 1 && oldH <= 6)
-      goDark = true;
-    else
-      goDark = false;
-
-    displayTime(goDark);
-
-    if (second()%5 == 0)
-      checkSwitches();
-
-
-    if ( (second() % 2) == 0 && !goDark && soundTickTock) {
-      digitalWrite(twoSecondPulse, HIGH);
-    } else {
-      digitalWrite(twoSecondPulse, LOW);
-    }
-
-
-  }
+  
+   indicatorLED(LED_MIRROR, MAGENTA, OFF, !MSF.LED);
+    
+   tasksOnceASecond();
 
   if (retard || bstChangeBackwardNow) {
     if (retardCount > 0) {
@@ -725,27 +682,11 @@ void indicatorLED(int c, uint32_t onColour, uint32_t offColour, bool state) {
 }
 
 
-void motorPulse(int movementDirection) {
-
-  indicatorLED(LED_TICK, ORANGE, OFF, true);
-
-  flag = ! flag;                   // reverse polarity from last drive
-  if (flag != true) {
-    posiDrive(movementDirection);
-  }  else {
-    negaDrive(movementDirection);
-  }
-
-  indicatorLED(LED_TICK, GREEN, OFF, false);
-
-}
-
-
 void displayTime(bool lightsOut) {
 
   char timeDisplay[22];
   char timeDisplayLCD[22];
-  char tmp[4];
+
 
   if (second() % 3 == 0) {
     //indicatorLED(LED_ADVANCE, GREEN, OFF, true);
@@ -758,7 +699,7 @@ void displayTime(bool lightsOut) {
   }
 
   char dy[3] = "";
-  char tempBu[6] = "";
+  
   sprintf(dy, "%2d", day());
 
   //if (SERIALOUT) Serial.println(timeDisplay);
@@ -789,36 +730,8 @@ void displayTime(bool lightsOut) {
   say(1, 5, dy, false);
   say(1, 8, months[month()], false);
 
-  dtostrf(Clock.getTemp(), 2, 0, tmp);
 
-  sprintf(tempBu, "%s%c", tmp, 0xDF); //degrees
 
-  say(1, 12, tempBu, false);
-
-}
-
-void posiDrive(int t) {            // output positive pulse at designated width
-  digitalWrite(CLOCKB, HIGH);
-  digitalWrite(CLOCKA, LOW);           // coil drive positive
-  delay(t);               // wait spcified time
-  digitalWrite(CLOCKA, HIGH);            // coil drive end
-}
-
-void negaDrive(int t) {                 // output negative pulse at designated width
-  digitalWrite(CLOCKA, HIGH);
-  digitalWrite(CLOCKB, LOW);          // coil drive negative
-  delay(t);                             // wait specified time
-  digitalWrite(CLOCKB, HIGH);           // coil drive end
-}
-
-// Convert normal decimal numbers to binary coded decimal
-byte decToBcd(byte val) {
-  return ( (val / 10 * 16) + (val % 10) );
-}
-
-// Convert binary coded decimal to normal decimal numbers
-byte bcdToDec(byte val) {
-  return ( (val / 16 * 10) + (val % 16) );
 }
 
 void checkSwitches() {
@@ -935,32 +848,110 @@ void lcdindicatorLED(int item, bool state) {
       break;
   }
 }
+
+
+void tasksOnceASecond() {
+
+  if (oldS != second() && (!retard && !advance)) {
+      oldS = second();
+      
+   
+    tasksOnceAMinute();
+    tasksOnceAnHour();
+    tasksOnceADay();
+    tasksOnceAYear();
+
+    if (stopClock == false) {
+        motorPulse(clockwise);
+        pulses++;
+    }
+    
+    indicatorLED(LED_MSFCARRIER, GREEN, WHITE, bCarrierState);
+    indicatorLED(VALID_MSFTIME, GREEN, ORANGE, MSF.TimeAvailable);
+        
+    tick = !tick;
+    
+    indicatorLED(SECOND_TICK, GREEN, RED, tick);
+    lcdindicatorLED(SECOND_TICK, tick);
+
+
+    if (oldH >= 1 && oldH <= 6)
+      goDark = true;
+    else
+      goDark = false;
+
+    displayTime(goDark);
+
+    if (second() % 5 == 0)
+      checkSwitches();
+
+
+    if ( (second() % 2) == 0 && !goDark && soundTickTock) {
+      digitalWrite(twoSecondPulse, HIGH);
+    } else {
+      digitalWrite(twoSecondPulse, LOW);
+    }   
+  }
+}
+
+
 void tasksOnceAMinute() {
 
   if (minute() != oldM) {
     oldM = minute();
     // do things each minute
+
+    if (soundChime && !goDark) {
+
+      
+      if (oldM == 10 && oldS == 0)  {
+        chime(CLOCK_15_MINUTE);
+      }
+
+      if (oldM == 15 && oldS == 0)  {
+        chime(CLOCK_15_MINUTE);
+      }
+      if (oldM == 30 && oldS == 0)  {
+        chime(CLOCK_30_MINUTE);
+      }
+      if (oldM == 45 && oldS == 0)  {
+        chime(CLOCK_45_MINUTE);
+      }
+      if (oldM == 59 && oldS == 55) {
+        chime(CLOCK_15_MINUTE);
+      }
+
+    }
+    
+    // It's not a thermometer, just extra info, once a minute is enough 
+    char tmp[4];
+    char tempBu[6] = "";
+    
+    dtostrf(Clock.getTemp(), 2, 0, tmp);
+    sprintf(tempBu, "%s%c", tmp, 0xDF); //degrees
+    say(1, 12, tempBu, false);
+    
   }
 
 
 }
 void tasksOnceAnHour() {
 
-   if (hour() != oldH) {
-      oldH = hour();
+  if (hour() != oldH) {
+    oldH = hour();
 
-      if (!goDark) {
-        if (oldH > 12) {
-          chime(oldH - 12);
-        } else {
-          if (oldH == 0)
-            chime(12);
-          else
-            chime(oldH);
-        }
+    if (!goDark) {
+      if (oldH > 12) {
+        chime(oldH - 12);
+      } else {
+        if (oldH == 0)
+          chime(12);
+        else
+          chime(oldH);
       }
-      writtenThisHour = false;
     }
+    writtenThisHour = false;
+  }
 
 }
 
@@ -1061,4 +1052,46 @@ byte readEEPROM(int deviceaddress, unsigned int eeaddress ) {
   if (Wire.available()) rdata = Wire.read();
 
   return rdata;
+}
+
+
+void motorPulse(int movementDirection) {
+
+  indicatorLED(LED_TICK, ORANGE, OFF, true);
+
+  flag = ! flag;                   // reverse polarity from last drive
+  if (flag != true) {
+    posiDrive(movementDirection);
+  }  else {
+    negaDrive(movementDirection);
+  }
+
+  indicatorLED(LED_TICK, GREEN, OFF, false);
+
+}
+
+
+
+void posiDrive(int t) {            // output positive pulse at designated width
+  digitalWrite(CLOCKB, HIGH);
+  digitalWrite(CLOCKA, LOW);           // coil drive positive
+  delay(t);               // wait spcified time
+  digitalWrite(CLOCKA, HIGH);            // coil drive end
+}
+
+void negaDrive(int t) {                 // output negative pulse at designated width
+  digitalWrite(CLOCKA, HIGH);
+  digitalWrite(CLOCKB, LOW);          // coil drive negative
+  delay(t);                             // wait specified time
+  digitalWrite(CLOCKB, HIGH);           // coil drive end
+}
+
+// Convert normal decimal numbers to binary coded decimal
+byte decToBcd(byte val) {
+  return ( (val / 10 * 16) + (val % 10) );
+}
+
+// Convert binary coded decimal to normal decimal numbers
+byte bcdToDec(byte val) {
+  return ( (val / 16 * 10) + (val % 16) );
 }
