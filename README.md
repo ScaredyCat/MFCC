@@ -12,9 +12,9 @@ I've made some modifications to both the MSFDecoder library and the JQ6500 libra
 
 # Board
 
-I used a DIYMORE Arduino Leonardo Clone for this project they are half the price of a Genuine Arduino Leonardo and have pints broken out to header pins in addition to the standard headers. The also have GND and 5v broken out for each pin and additional header pins for serial and i2c. This is really the sort of connectivity that I think should be on the genuine boards, but I guess they have reasons for not doing it.
+I used a DIYMORE Arduino Leonardo Clone for this project they are half the price of a Genuine Arduino Leonardo and have pins broken out to header pins in addition to the standard headers. The also have GND and 5v broken out for each pin and additional header pins for serial and i2c. This is really the sort of connectivity that I think should be on the genuine boards, but I guess they have reasons for not doing it.
 
-The "motherboard" is really a deliberately oversized Arduino shield but it removes a lot of the wires and provides a stable platform fo rall the components. I appreciate my soldering leaves a lot to be desired. I used pin headers quite a bit for my connections just for convenience - they turned out to be inconvenient when wires kept popping out of them. Many of the connections do not get populated as they are for other options.
+The "motherboard" is really a deliberately oversized Arduino shield but it removes a lot of the wires and provides a stable platform for all the components. I appreciate my soldering leaves a lot to be desired. I used pin headers quite a bit for my connections just for convenience - they turned out to be inconvenient when wires kept popping out of them. Many of the connections do not get populated as they are for other options.
 
 
 
