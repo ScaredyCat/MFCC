@@ -15,7 +15,7 @@
 //
 //
 // June 2020  - Added BST and BST Changing indicators and decoding.
-//            - Added Pim and interrupt id parameters. Should probably be
+//            - Added Pin and interrupt id parameters. Should probably be
 //              a lookup table for each arduino model but I don't have the time
 //              or inclination to build it, just pass the right values.
 //            - Increased minmum pulse width length to prevent interrupt being
