@@ -590,8 +590,8 @@ void loop() {
 
   if (retard || bstChangeBackwardNow) {
     if (retardCount > 0) {
-      if (oldS != second() ) {
-        oldS = second();
+      if (oldS != second(timeNow) ) {
+        oldS = second(timeNow);
         retardCount--;
       }
 
