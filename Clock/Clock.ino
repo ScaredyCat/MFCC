@@ -41,11 +41,7 @@
 #include <LiquidCrystal_I2C.h>
 #include <SPI.h>
 #include <DS3231.h>
-#include <Timezone.h>
 
-TimeChangeRule rBST = {"BST", Last, Sun, Mar, 1, 60};        //British Summer Time
-TimeChangeRule rGMT = {"GMT", Last, Sun, Oct, 2, 0};         //Standard Time
-Timezone UK(rBST, rGMT);
 /*
     Clock pins for clock 1
     Multiple clocks can be used and hands removed that are
@@ -345,7 +341,7 @@ bool writtenThisHour = false;
 
 byte iBitCount = 0;
 bool bCarrierState = false;
-
+byte savedHour, savedMinute, savedSecond, savedDay, savedMonth, savedYear;
 Time tinfo;
 
 
@@ -365,7 +361,7 @@ JQ6500_Serial mp3(8, 5);
 
 void setup() {
 
-  byte savedHour, savedMinute, savedSecond, savedDay, savedMonth, savedYear;
+  
 
   pinMode(PON, OUTPUT);
   digitalWrite(PON, LOW);
@@ -414,22 +410,6 @@ void setup() {
 
   readSavedDate(savedHour, savedMinute, savedSecond, savedDay, savedMonth, savedYear);
   sprintf(LastMSFLCD, "%02d:%02d:%02d %02d-%02d-%02d", savedHour, savedMinute, savedSecond, savedDay, savedMonth, savedYear);
-
-  /*if (savedMonth > month() && savedDay > day() && savedYear > year() && savedHour > hour() and savedMinute > minute()) {
-    Clock.setTime(savedHour,savedMinute,savedDay);
-    Clock.setDate(savedDay,savedMonth,savedYear);
-    }
-  */
-  /*
-    // set a default time until we get a DS3231 battery backed up clock attached.
-    setTime(DEFAULT_TIME);
-
-    Clock.setTime(hour(),minute(),second());
-    Clock.setDOW(weekday());
-    Clock.setDate(day(),month(),year());
-
-
-  */
 
   g_bPrevCarrierState = false;
   g_iPrevBitCount = 255;
@@ -485,14 +465,6 @@ void setup() {
   pinMode(BACKLIGHT_PIN, OUTPUT);
   analogWrite(BACKLIGHT_PIN, 0);
 
- // setSyncInterval(260);
- // setSyncProvider(refreshClockTime);
-
-}
-
-unsigned long refreshClockTime() {
-
-  return Clock.getUnixTime(Clock.getTime());
 }
 
 
@@ -687,15 +659,14 @@ void displayTime(bool lightsOut) {
   char timeDisplay[22];
   char timeDisplayLCD[22];
 
-
   if (second() % 3 == 0) {
     //indicatorLED(LED_ADVANCE, GREEN, OFF, true);
-    sprintf(timeDisplay, "%02d-%02d-%02d%02d-%02d-%02d", hour(), minute(), second(), day(), month(), year() - 2000);
-    sprintf(timeDisplayLCD, "%02d:%02d:%02d %02d-%02d-%02d", hour(), minute(), second(), day(), month(), year() - 2000);
+    sprintf(timeDisplay, "%02d-%02d-%02d%02d-%02d-%02d", savedHour, savedMinute, savedSecond, savedDay, savedMonth,savedYear- 2000);
+    sprintf(timeDisplayLCD, "%02d:%02d:%02d %02d-%02d-%02d", savedHour, savedMinute, savedSecond, savedDay, savedMonth,savedYear- 2000);
   } else {
     //indicatorLED(LED_ADVANCE, GREEN, OFF, false);
-    sprintf(timeDisplay, "%02d %02d %02d%02d-%02d-%02d", hour(), minute(), second(), day(), month(), year() - 2000);
-    sprintf(timeDisplayLCD, "%02d %02d %02d %02d-%02d-%02d", hour(), minute(), second(), day(), month(), year() - 2000);
+    sprintf(timeDisplay, "%02d %02d %02d%02d-%02d-%02d", savedHour, savedMinute, savedSecond, savedDay, savedMonth,savedYear- 2000);
+    sprintf(timeDisplayLCD, "%02d %02d %02d %02d-%02d-%02d", savedHour, savedMinute, savedSecond, savedDay, savedMonth,savedYear- 2000);
   }
 
   char dy[3] = "";
@@ -713,13 +684,6 @@ void displayTime(bool lightsOut) {
   }
 
   My_Display.String_To_Buffer(timeDisplay, 0);
-
-
-  /* if (!syncd)
-     sprintf(parityReason,"(no sync)");
-    else
-     sprintf(parityReason,"%s",parityErrors[parity]);
-  */
 
   sprintf(parityReason, "  %02d of 60 Pulses", iBitCount);
 
@@ -854,7 +818,8 @@ void tasksOnceASecond() {
 
   if (oldS != second() && (!retard && !advance)) {
       oldS = second();
-      
+      // freeze now for this second so all displays match
+      savedHour = hour(); savedMinute = minute(); savedSecond=second(); savedDay = day(); savedMonth=month(); savedYear=year();
    
     tasksOnceAMinute();
     tasksOnceAnHour();
@@ -954,7 +919,7 @@ void tasksOnceAnHour() {
 
 void tasksOnceADay() {
 
-  byte savedHour, savedMinute, savedSecond, savedDay, savedMonth, savedYear;
+  byte lsavedHour, lsavedMinute, lsavedSecond, lsavedDay, lsavedMonth, lsavedYear;
 
   // if a new day then...
   if (day() != oldD) {
@@ -963,8 +928,8 @@ void tasksOnceADay() {
     writtenToday = false;  //allow write to EEPROM (once) for this new day.
     syncd = false;
     indicatorLED(LED_SYNC_TODAY, YELLOW, OFF, syncd);
-    readSavedDate(savedHour, savedMinute, savedSecond, savedDay, savedMonth, savedYear);
-    sprintf(LastMSFLCD, "%02d:%02d:%02d %02d-%02d-%02d", savedHour, savedMinute, savedSecond, savedDay, savedMonth, savedYear);
+    readSavedDate(lsavedHour, lsavedMinute, lsavedSecond, lsavedDay, lsavedMonth, lsavedYear);
+    sprintf(LastMSFLCD, "%02d:%02d:%02d %02d-%02d-%02d", lsavedHour, lsavedMinute, lsavedSecond, lsavedDay, lsavedMonth, lsavedYear);
   }
 
   if (month() != oldMo) {
