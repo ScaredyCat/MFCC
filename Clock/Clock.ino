@@ -124,7 +124,6 @@ uint8_t parity = 0;
 #include <DS3231.h>
 DS3231 Clock(SDA, SCL);
 
-//extern unsigned long timer0_overflow_count;
 /*
     CLOCK_MINUTE values correspond with their id on
     the JQ6500 which is used to trigger audio playback
@@ -161,8 +160,8 @@ bool refreshTime = true;
 
 const int clockwise = 30;
 const int anticlockwise = 20;
-const int minimumInterval = 40; // minimum between pulses to prevent stalling.
-boolean flag = false;            // drive polarity flag - toggle for each pulse
+const int minimumInterval = 40;   // minimum between pulses to prevent stalling.
+boolean flag = false;             // drive polarity flag - toggle for each pulse
 
 
 #if defined(ARDUINO) && ARDUINO >= 100
