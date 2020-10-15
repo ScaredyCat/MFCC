@@ -361,7 +361,7 @@ JQ6500_Serial mp3(8, 5);
 
 void setup() {
 
-  
+
 
   pinMode(PON, OUTPUT);
   digitalWrite(PON, LOW);
@@ -485,7 +485,6 @@ void loop() {
   iBitCount = MSF.getBitCount();
 
 
-
   if (MSF.TimeAvailable) {
 
     parity = MSF.ParityResult;
@@ -579,14 +578,15 @@ void loop() {
 
     // doing this makes me vomit a little each time I see it.
     // but it does 'fix' the issue.
-    
+
     tinfo = Clock.getTime();
     setTime(tinfo.hour, tinfo.min, tinfo.sec, tinfo.date, tinfo.mon, tinfo.year);
   }
-  
-   indicatorLED(LED_MIRROR, MAGENTA, OFF, !MSF.LED);
-    
-   tasksOnceASecond();
+
+  indicatorLED(LED_MIRROR, MAGENTA, OFF, !MSF.LED);
+  time_t timeNow = now(); // single point unix time for all time values
+
+  tasksOnceASecond(timeNow);
 
   if (retard || bstChangeBackwardNow) {
     if (retardCount > 0) {
@@ -661,16 +661,16 @@ void displayTime(bool lightsOut) {
 
   if (second() % 3 == 0) {
     //indicatorLED(LED_ADVANCE, GREEN, OFF, true);
-    sprintf(timeDisplay, "%02d-%02d-%02d%02d-%02d-%02d", savedHour, savedMinute, savedSecond, savedDay, savedMonth,savedYear- 2000);
-    sprintf(timeDisplayLCD, "%02d:%02d:%02d %02d-%02d-%02d", savedHour, savedMinute, savedSecond, savedDay, savedMonth,savedYear- 2000);
+    sprintf(timeDisplay, "%02d-%02d-%02d%02d-%02d-%02d", savedHour, savedMinute, savedSecond, savedDay, savedMonth, savedYear - 2000);
+    sprintf(timeDisplayLCD, "%02d:%02d:%02d %02d-%02d-%02d", savedHour, savedMinute, savedSecond, savedDay, savedMonth, savedYear - 2000);
   } else {
     //indicatorLED(LED_ADVANCE, GREEN, OFF, false);
-    sprintf(timeDisplay, "%02d %02d %02d%02d-%02d-%02d", savedHour, savedMinute, savedSecond, savedDay, savedMonth,savedYear- 2000);
-    sprintf(timeDisplayLCD, "%02d %02d %02d %02d-%02d-%02d", savedHour, savedMinute, savedSecond, savedDay, savedMonth,savedYear- 2000);
+    sprintf(timeDisplay, "%02d %02d %02d%02d-%02d-%02d", savedHour, savedMinute, savedSecond, savedDay, savedMonth, savedYear - 2000);
+    sprintf(timeDisplayLCD, "%02d %02d %02d %02d-%02d-%02d", savedHour, savedMinute, savedSecond, savedDay, savedMonth, savedYear - 2000);
   }
 
   char dy[3] = "";
-  
+
   sprintf(dy, "%2d", day());
 
   //if (SERIALOUT) Serial.println(timeDisplay);
@@ -693,8 +693,6 @@ void displayTime(bool lightsOut) {
   say(1, 1, weekDay[weekday() - 1], false);
   say(1, 5, dy, false);
   say(1, 8, months[month()], false);
-
-
 
 }
 
@@ -814,28 +812,28 @@ void lcdindicatorLED(int item, bool state) {
 }
 
 
-void tasksOnceASecond() {
+void tasksOnceASecond(time_t frozenTime) {
 
-  if (oldS != second() && (!retard && !advance)) {
-      oldS = second();
-      // freeze now for this second so all displays match
-      savedHour = hour(); savedMinute = minute(); savedSecond=second(); savedDay = day(); savedMonth=month(); savedYear=year();
-   
-    tasksOnceAMinute();
-    tasksOnceAnHour();
-    tasksOnceADay();
-    tasksOnceAYear();
+  if (oldS != second(frozenTime) && (!retard && !advance)) {
+    oldS = second(frozenTime);
+    // save frozenTime for this second so all displays match
+    savedHour = hour(frozenTime); savedMinute = minute(frozenTime); savedSecond = second(frozenTime); savedDay = day(frozenTime); savedMonth = month(frozenTime); savedYear = year(frozenTime);
+
+    tasksOnceAMinute(frozenTime);
+    tasksOnceAnHour(frozenTime);
+    tasksOnceADay(frozenTime);
+    tasksOnceAYear(frozenTime);
 
     if (stopClock == false) {
-        motorPulse(clockwise);
-        pulses++;
+      motorPulse(clockwise);
+      pulses++;
     }
-    
+
     indicatorLED(LED_MSFCARRIER, GREEN, WHITE, bCarrierState);
     indicatorLED(VALID_MSFTIME, GREEN, ORANGE, MSF.TimeAvailable);
-        
+
     tick = !tick;
-    
+
     indicatorLED(SECOND_TICK, GREEN, RED, tick);
     lcdindicatorLED(SECOND_TICK, tick);
 
@@ -847,23 +845,23 @@ void tasksOnceASecond() {
 
     displayTime(goDark);
 
-    if (second() % 5 == 0)
+    if (second(frozenTime) % 5 == 0)
       checkSwitches();
 
 
-    if ( (second() % 2) == 0 && !goDark && soundTickTock) {
+    if ( (second(frozenTime) % 2) == 0 && !goDark && soundTickTock) {
       digitalWrite(twoSecondPulse, HIGH);
     } else {
       digitalWrite(twoSecondPulse, LOW);
-    }   
+    }
   }
 }
 
 
-void tasksOnceAMinute() {
+void tasksOnceAMinute(time_t frozenTime) {
 
-  if (minute() != oldM) {
-    oldM = minute();
+  if (minute(frozenTime) != oldM) {
+    oldM = minute(frozenTime);
     // do things each minute
 
     if (soundChime && !goDark) {
@@ -882,23 +880,23 @@ void tasksOnceAMinute() {
       }
 
     }
-    
-    // It's not a thermometer, just extra info, once a minute is enough 
+
+    // It's not a thermometer, just extra info, once a minute is enough
     char tmp[4];
     char tempBu[6] = "";
-    
+
     dtostrf(Clock.getTemp(), 2, 0, tmp);
     sprintf(tempBu, "%s%c", tmp, 0xDF); //degrees
     say(1, 12, tempBu, false);
-    
+
   }
 
 
 }
-void tasksOnceAnHour() {
+void tasksOnceAnHour(time_t frozenTime) {
 
-  if (hour() != oldH) {
-    oldH = hour();
+  if (hour(frozenTime) != oldH) {
+    oldH = hour(frozenTime);
 
     if (!goDark) {
       if (oldH > 12) {
@@ -917,14 +915,14 @@ void tasksOnceAnHour() {
 
 
 
-void tasksOnceADay() {
+void tasksOnceADay(time_t frozenTime) {
 
   byte lsavedHour, lsavedMinute, lsavedSecond, lsavedDay, lsavedMonth, lsavedYear;
 
   // if a new day then...
-  if (day() != oldD) {
-    oldD = day();
-    dayOfWeekLED(weekday());
+  if (day(frozenTime) != oldD) {
+    oldD = day(frozenTime);
+    dayOfWeekLED(weekday(frozenTime));
     writtenToday = false;  //allow write to EEPROM (once) for this new day.
     syncd = false;
     indicatorLED(LED_SYNC_TODAY, YELLOW, OFF, syncd);
@@ -932,16 +930,16 @@ void tasksOnceADay() {
     sprintf(LastMSFLCD, "%02d:%02d:%02d %02d-%02d-%02d", lsavedHour, lsavedMinute, lsavedSecond, lsavedDay, lsavedMonth, lsavedYear);
   }
 
-  if (month() != oldMo) {
-    oldMo = month();
+  if (month(frozenTime) != oldMo) {
+    oldMo = month(frozenTime);
     monthOfYearLED(oldMo);
   }
 }
 
-void tasksOnceAYear() {
+void tasksOnceAYear(time_t frozenTime) {
 
-  if (year() != oldY) {
-    oldY = year();
+  if (year(frozenTime) != oldY) {
+    oldY = year(frozenTime);
   }
 
 }
