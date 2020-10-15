@@ -39,7 +39,7 @@ The design is fairly modular and uses off the shelf modules to provide additiona
 
 - 1 x buck converter for power Approx cost from aliexpress is £1/unit
 
-- 1 x MSF receiver (CANADUINO) £11.18 + shipping (£5.40) - cost more than the price of getting the "motherboard" made, takes a long time to arrive. No other suppliers found as alternative. This cqan be swapped out for the DCF77 board if you want to use the DCF77 time signal (code changes required, same price
+- 1 x MSF receiver (CANADUINO) £11.18 + shipping (£5.40) - cost more than the price of getting the "motherboard" made, takes a long time to arrive. No other suppliers found as alternative. This can be swapped out for the DCF77 board if you want to use the DCF77 time signal (code changes required, same price
 though)
 
 - LED strip of WS2812B I picked up a 1 metre strip with 60 leds on it for £4.25 from aliexpress.
@@ -48,7 +48,7 @@ though)
 
 - An old (or new) quartz clock mechanism.
 
-- PCB cost￡9.85 + ￡5.22 shipping that's for the minimum oquantity of 5 boards.
+- PCB cost￡9.85 + ￡5.22 shipping that's for the minimum quantity of 5 boards.
 
 
 You can get these parts at places like amazon for slightly inflated prices but without the 2 week wait - sometimes prices are the same so shop around.
@@ -62,4 +62,3 @@ Without access to something like [JLCPCB](https://jlcpcb.com/) [No, they didn't 
 
 The biggest issue you are going to face is getting a good signal from Anthorn (Cumbria) - (or your location for WWVB, JJY). My workspace/office has lots of electrical equipment in it which interferes with the signal. Nothing during the day (the sun buggers up the signal) but better at night in with the receiver near a window. The antenna should be at 90 degrees to the expected signal path for best reception. Rotating it 90 degrees can change the signal level by 20-30dB. Initially my results were great but they have got steadily worse with a sync taking place maybe twice a fortnight if I'm lucky.
 
-**The current big issue is the arduino internal clock is losing about 3 minutes / hour if I don't resync with the DS3231, resyncing causes a pause and jump in the 7 segment/lcd display which is obviously not acceptable. I'm investigating this.**
