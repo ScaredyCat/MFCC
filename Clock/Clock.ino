@@ -360,8 +360,6 @@ JQ6500_Serial mp3(8, 5);
 
 void setup() {
 
-
-
   pinMode(PON, OUTPUT);
   digitalWrite(PON, LOW);
 
@@ -381,8 +379,8 @@ void setup() {
   
   My_Display.String_To_Buffer(" ", 0);
 
-  //Serial.begin(115200);
-  //while (!Serial);
+ //Serial.begin(115200);
+ //while (!Serial);
  
 
   MSF.init(aInputPin, aInterrupt);
@@ -582,8 +580,12 @@ void loop() {
   }
 
   indicatorLED(LED_MIRROR, MAGENTA, OFF, !MSF.LED);
-  time_t timeNow = now(); // single point unix time for all time values
-
+  
+  // Freeze time for all events
+  // so that all tested events are for the same point in time.
+  
+  time_t timeNow = now(); 
+  
   tasksOnceASecond(timeNow);
 
   if (retard || bstChangeBackwardNow) {
@@ -757,11 +759,14 @@ void monthOfYearLED(int m) {
 
 void dayOfWeekLED(int DOW) {
 
+  // Days of week, unlike linux, don't start at 0.  
+  
   for (int i = 0; i <= 6; i++) {
-    if (DOW == i)
+    if (DOW-1 == i)       
       strip.setPixelColor(i + LED_DOW_SUNDAY, GREEN);
-    else
+     else 
       strip.setPixelColor(i + LED_DOW_SUNDAY, OFF);
+ 
   }
 
   strip.show();
