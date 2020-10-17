@@ -378,13 +378,12 @@ void setup() {
   g_iPrevBitCount = 255;
 
   digitalWrite(13, LOW);
-  //sprintf(wipe, "%16s"," ");
+  
   My_Display.String_To_Buffer(" ", 0);
 
-  //if (SERIALOUT) {
-  //  Serial.begin(115200);
-  //   while (!Serial);
-  //}
+  //Serial.begin(115200);
+  //while (!Serial);
+ 
 
   MSF.init(aInputPin, aInterrupt);
 
@@ -514,13 +513,13 @@ void loop() {
          This is EEPROM so if our signal is "too good" we want to prevent writing to this constantly
 
       */
-      if (!writtenThisHour)
+      if (!writtenThisHour) {
         writeSavedDate(MSF.m_iHour, MSF.m_iMinute, 0, MSF.m_iDay, MSF.m_iMonth, MSF.m_iYear);
-
+        writtenThisHour = true;
+      }
+      
       writtenToday = true;
-      writtenThisHour = true;
-
-
+      
       bst = MSF.m_BST;
       bstsoon = MSF.m_BSTSOON;
 
@@ -532,12 +531,12 @@ void loop() {
 
       indicatorLED(LED_SYNC_TODAY, BLUE, OFF, syncd);
 
-      indicatorLED(LED_PARITYERROR_YEAR, YELLOW, OFF, false);
+    /*  indicatorLED(LED_PARITYERROR_YEAR, YELLOW, OFF, false);
       indicatorLED(LED_PARITYERROR_MONTH, YELLOW, OFF, false);
       indicatorLED(LED_PARITYERROR_WEEKDAY, YELLOW, OFF, false);
       indicatorLED(LED_PARITYERROR_TIME, YELLOW, OFF, false);
-
-      // Show it on LCD
+    */
+     
 
       /*
          Automatically retard time if we're changing to winter
@@ -603,7 +602,7 @@ void loop() {
       indicatorLED(LED_RETARD, PURPLE, OFF, retard);
 
     }
-    displayTime(goDark);
+    displayTime(goDark, timeNow);
   }
 
   if (advance || bstChangeForwardNow) {
@@ -620,7 +619,7 @@ void loop() {
       indicatorLED(LED_ADVANCE, GREEN, OFF, advance);
 
     }
-    displayTime(goDark);
+    displayTime(goDark, timeNow);
 
   }
 
@@ -635,44 +634,49 @@ void indicatorLED(int c, uint32_t onColour, uint32_t offColour, bool state) {
       isDark = false;
     }
 
-    if (state)
-      strip.setPixelColor(c, onColour); // Set pixel 'c' to value 'color'
-    else
-      strip.setPixelColor(c, offColour); // Set pixel 'c' to value 'color'
-
-
   } else {
     //strip.setPixelColor(c, OFF);
     strip.setBrightness(0);
     isDark = true;
   }
-
+  
+  // Set these regardless of brightness otherwise DOW/MONTH wont change 
+  // if we're in lightsOut mode.
+  
+    if (state)
+      strip.setPixelColor(c, onColour); // Set pixel 'c' to value 'color'
+    else
+      strip.setPixelColor(c, offColour); // Set pixel 'c' to value 'color'
 
   strip.show();
 
 }
 
 
-void displayTime(bool lightsOut) {
+void displayTime(bool lightsOut, time_t frozenTime) {
 
   char timeDisplay[22];
   char timeDisplayLCD[22];
 
+  int year2d =year(frozenTime);
+
+  if (year2d > 2000)
+    year2d = year2d-2000;
+
+
   if (second() % 3 == 0) {
     //indicatorLED(LED_ADVANCE, GREEN, OFF, true);
-    sprintf(timeDisplay, "%02d-%02d-%02d%02d-%02d-%02d", savedHour, savedMinute, savedSecond, savedDay, savedMonth, savedYear - 2000);
-    sprintf(timeDisplayLCD, "%02d:%02d:%02d %02d-%02d-%02d", savedHour, savedMinute, savedSecond, savedDay, savedMonth, savedYear - 2000);
+    sprintf(timeDisplay, "%02d-%02d-%02d%02d-%02d-%02d",  hour(frozenTime),  minute(frozenTime),  second(frozenTime),  day(frozenTime),  month(frozenTime),  year2d);
+    sprintf(timeDisplayLCD, "%02d:%02d:%02d %02d-%02d-%02d", hour(frozenTime),  minute(frozenTime),  second(frozenTime),  day(frozenTime),  month(frozenTime),  year2d);
   } else {
     //indicatorLED(LED_ADVANCE, GREEN, OFF, false);
-    sprintf(timeDisplay, "%02d %02d %02d%02d-%02d-%02d", savedHour, savedMinute, savedSecond, savedDay, savedMonth, savedYear - 2000);
-    sprintf(timeDisplayLCD, "%02d %02d %02d %02d-%02d-%02d", savedHour, savedMinute, savedSecond, savedDay, savedMonth, savedYear - 2000);
+    sprintf(timeDisplay, "%02d %02d %02d%02d-%02d-%02d", hour(frozenTime),  minute(frozenTime),  second(frozenTime),  day(frozenTime),  month(frozenTime),  year2d);
+    sprintf(timeDisplayLCD, "%02d %02d %02d %02d-%02d-%02d", hour(frozenTime),  minute(frozenTime),  second(frozenTime),  day(frozenTime),  month(frozenTime),  year2d);
   }
 
   char dy[3] = "";
 
   sprintf(dy, "%2d", day());
-
-  //if (SERIALOUT) Serial.println(timeDisplay);
 
   if (lightsOut || backlightState) {
     if (lightsOut)
@@ -740,11 +744,11 @@ void chime(int chimeId) {
 
 void monthOfYearLED(int m) {
 
-  for (int i = LED_MONTH_JANUARY - 18; i <= LED_MONTH_DECEMBER - 18; i++) {
+  for (int i = 0; i <= 11; i++) {
     if (m == i)
-      strip.setPixelColor(i + 18, GREEN);
+      strip.setPixelColor(i + LED_MONTH_JANUARY, GREEN);
     else
-      strip.setPixelColor(i + 18, OFF);
+      strip.setPixelColor(i + LED_MONTH_JANUARY, OFF);
   }
 
   strip.show();
@@ -753,11 +757,11 @@ void monthOfYearLED(int m) {
 
 void dayOfWeekLED(int DOW) {
 
-  for (int i = LED_DOW_SUNDAY - 12; i <= LED_DOW_SATURDAY - 12; i++) {
+  for (int i = 0; i <= 6; i++) {
     if (DOW == i)
-      strip.setPixelColor(i + 12, GREEN);
+      strip.setPixelColor(i + LED_DOW_SUNDAY, GREEN);
     else
-      strip.setPixelColor(i + 12, OFF);
+      strip.setPixelColor(i + LED_DOW_SUNDAY, OFF);
   }
 
   strip.show();
@@ -815,9 +819,7 @@ void tasksOnceASecond(time_t frozenTime) {
 
   if (oldS != second(frozenTime) && (!retard && !advance)) {
     oldS = second(frozenTime);
-    // save frozenTime for this second so all displays match
-    savedHour = hour(frozenTime); savedMinute = minute(frozenTime); savedSecond = second(frozenTime); savedDay = day(frozenTime); savedMonth = month(frozenTime); savedYear = year(frozenTime);
-
+ 
     tasksOnceAMinute(frozenTime);
     tasksOnceAnHour(frozenTime);
     tasksOnceADay(frozenTime);
@@ -842,7 +844,7 @@ void tasksOnceASecond(time_t frozenTime) {
     else
       goDark = false;
 
-    displayTime(goDark);
+    displayTime(goDark, frozenTime);
 
     if (second(frozenTime) % 5 == 0)
       checkSwitches();
@@ -924,7 +926,7 @@ void tasksOnceADay(time_t frozenTime) {
     dayOfWeekLED(weekday(frozenTime));
     writtenToday = false;  //allow write to EEPROM (once) for this new day.
     syncd = false;
-    indicatorLED(LED_SYNC_TODAY, YELLOW, OFF, syncd);
+    indicatorLED(LED_SYNC_TODAY, BLUE, OFF, syncd);
     readSavedDate(lsavedHour, lsavedMinute, lsavedSecond, lsavedDay, lsavedMonth, lsavedYear);
     sprintf(LastMSFLCD, "%02d:%02d:%02d %02d-%02d-%02d", lsavedHour, lsavedMinute, lsavedSecond, lsavedDay, lsavedMonth, lsavedYear);
   }
