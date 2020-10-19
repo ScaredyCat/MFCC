@@ -832,7 +832,6 @@ void tasksOnceASecond(time_t frozenTime) {
 
     if (stopClock == false) {
       motorPulse(clockwise);
-      pulses++;
     }
 
     indicatorLED(LED_MSFCARRIER, GREEN, WHITE, bCarrierState);
@@ -869,19 +868,20 @@ void tasksOnceAMinute(time_t frozenTime) {
   if (minute(frozenTime) != oldM) {
     oldM = minute(frozenTime);
     // do things each minute
+    int testSec = second(frozenTime);
 
     if (soundChime && !goDark) {
 
-      if (oldM == 15 && oldS == 0)  {
+      if (oldM == 15 && testSec == 0)  {
         chime(CLOCK_15_MINUTE);
       }
-      if (oldM == 30 && oldS == 0)  {
+      if (oldM == 30 && testSec == 0)  {
         chime(CLOCK_30_MINUTE);
       }
-      if (oldM == 45 && oldS == 0)  {
+      if (oldM == 45 && testSec == 0)  {
         chime(CLOCK_45_MINUTE);
       }
-      if (oldM == 59 && oldS == 55) {
+      if (oldM == 59 && testSec == 55) {
         chime(CLOCK_15_MINUTE);
       }
 
@@ -1029,6 +1029,8 @@ void motorPulse(int movementDirection) {
   }  else {
     negaDrive(movementDirection);
   }
+      
+  pulses++;
 
   indicatorLED(LED_TICK, GREEN, OFF, false);
 
