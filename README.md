@@ -62,3 +62,4 @@ Without access to something like [JLCPCB](https://jlcpcb.com/) [No, they didn't 
 
 The biggest issue you are going to face is getting a good signal from Anthorn (Cumbria) - (or your location for WWVB, JJY). My workspace/office has lots of electrical equipment in it which interferes with the signal. Nothing during the day (the sun buggers up the signal) but better at night in with the receiver near a window. The antenna should be at 90 degrees to the expected signal path for best reception. Rotating it 90 degrees can change the signal level by 20-30dB. Initially my results were great but they have got steadily worse with a sync taking place maybe twice a fortnight if I'm lucky.
 
+Having tweaked the MSFDecoder to cut down on noise thigs have got much better, not a lot of syncing during the day but occasioanal ones and quite a lot of syncing at night/early morning. I'm getting multiple syncs a day.
